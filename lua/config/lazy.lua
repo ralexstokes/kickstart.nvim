@@ -395,7 +395,7 @@ require('lazy').setup({
 
       vim.list_extend(ensure_installed, {
         'lua-language-server', -- Lua Language server
-        'alejandra', -- Used to format Nix code
+        'nixpkgs-fmt', -- Used to format Nix code
         'stylua', -- Used to format Lua code
         -- You can add other tools here that you want Mason to install
       })
@@ -481,7 +481,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        nix = { 'alejandra' },
+        nix = { 'nixpkgs_fmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
