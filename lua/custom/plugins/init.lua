@@ -63,13 +63,14 @@ return {
     },
     cmd = 'Neotree',
     keys = {
-      { '<leader>e', '<cmd>Neotree toggle<CR>', desc = 'File Tr[e]e' },
+      { '<leader>e', '<cmd>Neotree<CR>', desc = 'File Tr[e]e' },
       { '\\', '<cmd>Neotree reveal<CR>', desc = 'NeoTree reveal' },
     },
     opts = {
       filesystem = {
         window = {
           mappings = {
+            ['<tab>'] = 'toggle_node',
             ['\\'] = 'close_window',
           },
         },

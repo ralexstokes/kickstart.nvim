@@ -168,6 +168,7 @@ require('lazy').setup({
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = '[F]uzzy [F]iles' })
+      vim.keymap.set('n', '<leader>fq', '<cmd>bdelete<CR>', { desc = '[F]ile [Q]uit buffer' })
       vim.keymap.set('n', '<leader>fs', '<cmd>write<cr>', { desc = '[F]ile [S]ave' })
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
