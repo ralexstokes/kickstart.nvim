@@ -382,14 +382,37 @@ require('lazy').setup({
       --    :Mason
       --
       -- You can press `g?` for help in this menu.
-      local ensure_installed = vim.tbl_keys(servers or {})
+      local ensure_installed = {}
+      local lsp_to_package = {}
+      local ok_mason_lspconfig, mason_lspconfig = pcall(require, 'mason-lspconfig')
+      if ok_mason_lspconfig then
+        lsp_to_package = mason_lspconfig.get_mappings().lspconfig_to_package
+      end
+
+      for name in pairs(servers or {}) do
+        table.insert(ensure_installed, lsp_to_package[name] or name)
+      end
+
       vim.list_extend(ensure_installed, {
-        'lua_ls', -- Lua Language server
-        'nixd', -- Nix Language server
+        'lua-language-server', -- Lua Language server
         'alejandra', -- Used to format Nix code
         'stylua', -- Used to format Lua code
         -- You can add other tools here that you want Mason to install
       })
+
+      ensure_installed = vim.fn.uniq(vim.fn.sort(ensure_installed))
+
+      local ok_registry, mason_registry = pcall(require, 'mason-registry')
+      if ok_registry and mason_registry.has_package then
+        ensure_installed = vim.tbl_filter(function(pkg)
+          if mason_registry.has_package(pkg) then
+            return true
+          end
+
+          vim.schedule(function() vim.notify(('mason: skipping unavailable package "%s"'):format(pkg), vim.log.levels.WARN) end)
+          return false
+        end, ensure_installed)
+      end
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -629,7 +652,19 @@ require('lazy').setup({
       require('nvim-treesitter').install(filetypes)
       vim.api.nvim_create_autocmd('FileType', {
         pattern = filetypes,
-        callback = function() vim.treesitter.start() end,
+        callback = function(args)
+          local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype) or vim.bo[args.buf].filetype
+          if not lang or lang == '' then
+            return
+          end
+
+          -- Parser installs can lag behind FileType; skip hard errors when unavailable.
+          if vim.treesitter.language.add and not pcall(vim.treesitter.language.add, lang) then
+            return
+          end
+
+          pcall(vim.treesitter.start, args.buf, lang)
+        end,
       })
     end,
   },
