@@ -22,6 +22,35 @@ return {
       integrations = {
         diffview = true,
       },
+      mappings = {
+        status = {
+          ['s'] = function()
+            local status = require('neogit.buffers.status').instance()
+            if not status or not status.buffer or not status.buffer.ui then
+              return
+            end
+
+            local ui = status.buffer.ui
+            local selection = ui:get_selection()
+            local section = ui:get_current_section() or selection.section
+            local item = selection.item
+
+            -- Work around cursor-to-hunk detection misses by resolving hunks from line range.
+            if section and section.options.section == 'unstaged' and item then
+              local hunks = ui:item_hunks(item, selection.first_line, selection.last_line, false)
+              if #hunks > 0 then
+                local git = require 'neogit.lib.git'
+                local patch = git.index.generate_patch(hunks[1].hunk)
+                git.index.apply(patch, { cached = true })
+                status:dispatch_refresh({ update_diffs = { '*:' .. item.name } }, 'user_n_stage_hunk')
+                return
+              end
+            end
+
+            require('neogit.buffers.status.actions').n_stage(status)()
+          end,
+        },
+      },
     },
   },
   {
